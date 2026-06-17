@@ -1,0 +1,6 @@
+{
+  "name": "Grid Dig Escape",
+  "description": "マス目を移動し、追ってくる敵を避け、穴を掘って土を退かしたり、罠を掘って敵を落としたりしながらゴールを目指すアクションパズルゲームです。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

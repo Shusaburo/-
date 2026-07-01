@@ -6,6 +6,7 @@
 class RetroAudioSynth {
   private ctx: AudioContext | null = null;
   private isMuted: boolean = false;
+  private bgm: HTMLAudioElement | null = null;
 
   private initCtx() {
     if (!this.ctx) {
@@ -18,6 +19,9 @@ class RetroAudioSynth {
 
   setMute(muted: boolean) {
     this.isMuted = muted;
+    if (this.bgm) {
+      this.bgm.muted = muted;
+    }
     if (!muted) {
       this.initCtx();
     }
@@ -25,6 +29,25 @@ class RetroAudioSynth {
 
   getMuted() {
     return this.isMuted;
+  }
+
+  playBGM() {
+    if (!this.bgm) {
+      this.bgm = new Audio("/bgm.mp3");
+      this.bgm.loop = true;
+      this.bgm.volume = 0.15;
+    }
+    this.bgm.muted = this.isMuted;
+    this.bgm.play().catch(err => {
+      console.warn("BGM autoplay blocked:", err);
+    });
+  }
+
+  stopBGM() {
+    if (this.bgm) {
+      this.bgm.pause();
+      this.bgm.currentTime = 0;
+    }
   }
 
   private playTone(

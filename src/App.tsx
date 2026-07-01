@@ -247,6 +247,7 @@ export default function App() {
     loadLevel(levelSelected);
     setScreen('PLAYING');
     setGameActive(true);
+    synth.playBGM();
   };
 
   // BFS solver for Red Chase algorithm and Purple Ghost algorithm
@@ -605,6 +606,7 @@ export default function App() {
       const levelCompletionScore = score + 1000; // Flat clear bonus (+1000 PTS)
       setScore(levelCompletionScore);
       saveHighScore(levelCompletionScore);
+      synth.stopBGM();
       synth.playLevelClear();
       setScreen('LEVEL_CLEAR');
     }
@@ -1025,15 +1027,32 @@ export default function App() {
         return;
       }
 
-      // 敵と接触しても死なないようになったため、ダメージやリセット処理はスキップします。
-      // 代わりにプレイヤーの位置に接触エフェクトと安全警告バブルを表示します。
-      setAlertBubble({
-        text: "⚡ CONTACT (★SAFE★)",
-        x: player.pos.x,
-        y: player.pos.y,
-        time: 1
+      // 敵と接触した場合のダメージ処理！
+      synth.playHurt();
+      triggerParticles(player.pos.x, player.pos.y, '#ef4444', 30, 1.2);
+      
+      setLives(prev => {
+        const nextLives = prev - 1;
+        if (nextLives <= 0) {
+          // ゲームオーバー
+          synth.stopBGM();
+          synth.playGameOver();
+          setScreen('GAMEOVER');
+          return 0;
+        } else {
+          // プレイヤー位置をリセット
+          setPlayer(p => ({
+            ...p,
+            pos: { ...level.playerStart },
+            targetPos: null,
+            digProgress: 0,
+            diggingDir: null,
+          }));
+          // 準備タイマー（2秒）をセットして同志に安全な再スタート時間を提供します！
+          setReadyTimer(2.0);
+          return nextLives;
+        }
       });
-      triggerParticles(player.pos.x, player.pos.y, '#f59e0b', 8, 0.8);
     }
 
   }, [enemies, player.pos, screen, readyTimer, level, triggerParticles, shieldTimer, drillTimer]);
@@ -1098,20 +1117,24 @@ export default function App() {
   const handleNextLevel = () => {
     const nextIdx = (levelIndex + 1);
     if (nextIdx >= totalLevelsCount) {
+      synth.stopBGM();
       setScreen('VICTORY');
       synth.playVictory();
     } else {
       loadLevel(nextIdx);
       setScreen('PLAYING');
+      synth.playBGM();
     }
   };
 
   const handleRetryLevel = () => {
     loadLevel(levelIndex);
     setScreen('PLAYING');
+    synth.playBGM();
   };
 
   const handleBackToTitle = () => {
+    synth.stopBGM();
     setScreen('TITLE');
     setGameActive(false);
   };
